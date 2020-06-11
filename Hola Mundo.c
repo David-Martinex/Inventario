@@ -11,6 +11,28 @@
 #include "Stock.h" */
 
 //----------------------------------------------------------------------
+//  Producto
+//----------------------------------------------------------------------
+
+/*#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <string.h>
+#define MAX_TAM 32*/
+
+/**
+ * @struct Producto tipo de dato abstracto
+*/
+typedef struct
+{
+   int bar_code;
+   float precio;
+   char nombre[MAX_TAM];
+   // ... quizás más campos 
+} Producto;
+
+//----------------------------------------------------------------------
 //  DLL.h
 //----------------------------------------------------------------------
 
@@ -319,6 +341,154 @@ Producto DLL_Peek( DLL* this )
 {
     assert( this );
     return this->cursor->item;
+}
+
+//----------------------------------------------------------------------
+//  Stock.h
+//----------------------------------------------------------------------
+
+/*#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <string.h>
+#define MAX_TAM 32
+#define Max 12*/
+
+/**
+ * @struct Stock tipo de dato abstracto llamada, Stock es mas corto que inventario.
+*/
+typedef struct
+{
+   DLL* list; 
+} Stock; 
+
+/**
+ * @brief Crea un Inventario( Stock ).
+ * @return una referencia al tipo de dato abstracto Stock.
+ */
+Stock* Stock_New();
+
+/**
+ * @brief Destruye un Inventario( Stock ).
+ * @param this referencia a un tipo de dato abstracto Stock.
+ */
+void Stock_Delete( Stock** this );
+
+/**
+ * @brief Agrega un nuevo producto, lee y guarda su cantidad.
+ * @param this referencia a un tipo de dato abstracto Stock.
+ * @param p referencia a un tipo de dato abstracto Producto.
+ * @param cant referencia a un tipo entero sin signo.
+ */
+void Stock_add( Stock* this, Producto* p, size_t cant );
+
+/**
+ * @brief Retira un Producto del Inventario.
+ * @param this referencia a un tipo de dato abstracto Stock.
+ * @param p referencia a un tipo de dato abstracto Producto.
+ */
+void Stock_remove( Stock* this, Producto* p );
+
+/**
+ * @brief Busca un producto apartir de bar_code.
+ * @param this referencia a un tipo de dato abstracto Stock.
+ * @param bar_code referencia a un tipo entero.
+ * @return true o false dependiendo de la situacion
+ */
+bool Stock_search_by_bar_code( Stock* this, int bar_code );
+
+/**  
+ * @brief Imprime los datos del producto que apunte cursor.
+ * @param this referencia a un tipo de dato abstracto Stock.
+ */
+void Stock_get( Stock* this );
+
+/**
+ * @brief Imprimir todos los productos dentro del inventario.
+ * @param this referencia a un tipo de dato abstracto Stock.
+ */
+void Stock_report( Stock* this );
+
+//----------------------------------------------------------------------
+//  Stock.c
+//----------------------------------------------------------------------
+
+/*#include "Producto.h"
+#include "DLL.h"
+#include "Stock.h"*/
+
+Stock* Stock_New()
+{
+    Stock* Inventario = ( Stock* )malloc( sizeof( Stock ) );
+    if( Inventario ){
+        Inventario->list = DLL_New();
+    }
+    return Inventario;
+}
+
+void Stock_Delete( Stock** this )
+{
+    assert( *this );
+    if( *this ){
+        Stock* n = *this;
+        DLL_Delete( &n->list );
+        free( n );
+        *this = NULL;
+    }
+}
+
+void Stock_add( Stock* this, Producto* p, size_t cant )
+{
+   if( DLL_Search( this->list, p->bar_code ) == false ){
+        DLL_InsertBack( this->list, p, cant );//DLL_InsertFront( this->list, p, cant );
+    } else {
+        this->list->cursor->cantidad += cant;
+    }
+}
+
+void Stock_remove( Stock* this, Producto* p )
+{
+   if( DLL_Search( this->list, p->bar_code ) != false ){
+        if(DLL_Remove( this->list ) == true ){
+            printf("\nSe elimino con exito");
+        }else{
+            printf("\nNo se pudo Eliminar");
+        }
+        
+    }else{
+        printf("\n!!No se encontro El producto deseado.");
+    } 
+}
+
+bool Stock_search_by_bar_code( Stock* this, int bar_code )
+{
+   return DLL_Search( this->list, bar_code );
+}
+
+void Stock_get( Stock* this )
+{
+    Producto p = DLL_Peek( this->list );
+    printf("\n\n===================\nNombre del Producto: ");
+    
+    for( size_t i = 0; i < 12 ; ++i ){
+       printf("%c", p.nombre[ i ] );
+    }
+    printf("\nCodigo de Barras: %u\nPrecio: %0.2f\nUnidades: %ld\n", p.bar_code, p.precio, this->list->cursor->cantidad);
+}
+
+void Stock_report( Stock* this )
+{
+   assert( this );
+    for(NodePtr it = this->list->first; it != NULL ; it = it->next ){
+        printf("\n\n=====================");
+        printf("\nProducto: ");
+        for( size_t i = 0 ; i < Max ; ++i ){
+            printf("%c", it->item.nombre[ i ] );   
+        }
+        printf("\nCodigo de Barras: %d\nPrecio: %0.2f\nUnidades: %ld",it->item.bar_code, it->item.precio, it->cantidad );
+    }
+    printf("\n\nCuentas con %ld Poductos\n" , DLL_Len( this->list ) );
 }
 
 //----------------------------------------------------------------------
